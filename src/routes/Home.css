@@ -1,0 +1,38 @@
+@keyframes fadeIn {
+   0%  { opacity: 0;}
+   100% { opacity: 1;}
+}
+
+.fade-in-text {
+    animation: fadeIn 2s ease-in-out forwards;
+}
+
+@keyframes moveUp {
+    from {transform: translateY(10px); opacity: 0; }
+    to {transform: translateY(0); opacity: 1;}
+}
+
+.move-up-text {
+    animation: moveUp 1.5s ease-in-out;
+}
+
+.sidebar {
+    width: 300px;
+    height: 50vh;
+    overflow-x: scroll;
+    background-color: antiquewhite;
+    color: white;
+    padding: 20px;
+}
+
+.image-container {
+    display: flex; /* Enables flexbox */
+    flex-wrap: wrap; /* Ensures images don't overflow */
+    gap: 10px; /* Adds space between images */
+  }
+  
+  .image-container img {
+    width: 190px; /* Adjust size */
+    height: auto; /* Maintains aspect ratio */
+  }
+  
