@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: 'https://ZhaoSongZh7.github.io/AI-Lesson-Generator',
   plugins: [react(),
      tailwindcss(),
   ],
