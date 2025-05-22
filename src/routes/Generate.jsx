@@ -17,7 +17,7 @@ const Generate = () => {
                 <div className='text-lg flex items-start'>Generate a lesson:</div>
                 <label>
                     <div className='flex relative w-[500px]'>
-                        <input className="w-170 h-10 text-sm border-gray-400 border-2 rounded-lg pl-3 pr-12" name="prompt" placeholder='Describe your lesson idea (e.g., photosynthesis for 6th grade)' type="text"/>
+                        <input className="w-170 h-10 text-sm border-gray-400 border-1 rounded-lg pl-3 pr-12" name="prompt" placeholder='Describe your lesson idea (e.g., photosynthesis for 6th grade)' type="text"/>
                         <button type="submit" onClick={() => console.log("test")} className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-700 hover:text-gray-800'>
                             <IoSendSharp className='text-[25px]'/>
                         </button>
