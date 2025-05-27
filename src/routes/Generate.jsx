@@ -18,6 +18,9 @@ const Generate = () => {
 		const response = await ai.models.generateContent({
 			model: "gemini-2.0-flash",
 			contents: contents,
+            config: {
+                systemInstruction: "You are a teacher who has mastered every subject. Your name is Lesson AI. Your job is to generate lesson plans for teachers to use. Make sure to ask amount of time teachers have to teach their desired topic and ask their desired file formatting and aid them in their chosen presentation method. After they answer your questions, immediately give them the lesosn plan you have generated based off the information they have given you. Format your responses appropriately.",
+            },
 		});
 		console.log(response.text);
 		setGeneratedValue(response.text);
