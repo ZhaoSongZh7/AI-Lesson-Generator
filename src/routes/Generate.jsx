@@ -6,7 +6,9 @@ import ReactMarkdown from "react-markdown";
 
 const Generate = () => {
 	const [promptValue, setPromptValue] = useState("");
+    const [previousPromptValue, setPreviousPromptValue] = useState('');
 	const [generatedValue, setGeneratedValue] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
 	const ai = new GoogleGenAI({
 		apiKey: "AIzaSyBszETvxeQDycpR6YeiU0b0NU5-Oz-CcH8",
@@ -30,6 +32,7 @@ const Generate = () => {
 		if (e.key === "Enter") {
 			if (promptValue.length > 0) {
 				generate(promptValue);
+                setPreviousPromptValue(e.target.value);
 				setPromptValue("");
 			} else {
 				alert("Enter a non-empty input!");
@@ -40,6 +43,7 @@ const Generate = () => {
 	function handleKeySubmit() {
 		if (promptValue.length > 0) {
 			generate(promptValue);
+            setPreviousPromptValue(e.target.value);
 			setPromptValue("");
 		} else {
 			alert("Enter a non-empty input!");
@@ -48,7 +52,7 @@ const Generate = () => {
 
 	return (
 		<div className="min-h-screen bg-slate-50 w-full flex items-start justify-center">
-			<div className="flex flex-col items-start max-w-3xl gap-5 font-semibold text-3xl translate-y-[150px]">
+			<div className="flex flex-col items-start max-w-3xl gap-5 font-semibold text-3xl translate-y-[150px]">  
 				<div>
 					<div className="text-lg flex items-start w-[768px] pt-[10px] pb-[10px]">
 						Generate a lesson:
@@ -75,15 +79,15 @@ const Generate = () => {
 					</label>
 				</div>
 				<div
-					className="text-[25px] font-normal max-w-full max-h-[600px] overflow-auto p-[25px]
+					className="text-[25px] font-normal min-w-full max-h-[600px] overflow-auto p-[25px]
   [&::-webkit-scrollbar]:w-2
   [&::-webkit-scrollbar-track]:rounded-full
   [&::-webkit-scrollbar-track]:bg-gray-100
   [&::-webkit-scrollbar-thumb]:rounded-full
-  [&::-webkit-scrollbar-thumb]:bg-gray-300
-  dark:[&::-webkit-scrollbar-track]:bg-neutral-700
-  dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
+  [&::-webkit-scrollbar-thumb]:bg-gray-300"
 				>
+                    <div className="font-bold pb-[20px]">Your Prompt: {previousPromptValue}</div>
+
 					<ReactMarkdown>{generatedValue}</ReactMarkdown>
 					{/* <Typewriter options={{
                     strings: generatedValue,
