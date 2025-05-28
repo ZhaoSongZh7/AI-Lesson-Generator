@@ -4,6 +4,25 @@
   text-align: center;
 }
 
+.no-print {
+  display: block;
+}
+
+@media print {
+  .no-print {
+    display: none;
+  }
+}
+
+.print-content {
+  display: none;
+}
+
+@media print {
+  .print-content {
+    display: block;
+  }
+}
 .logo {
   height: 6em;
   padding: 1.5em;
