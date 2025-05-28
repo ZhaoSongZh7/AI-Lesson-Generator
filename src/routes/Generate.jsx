@@ -6,24 +6,27 @@ import ReactMarkdown from "react-markdown";
 
 const Generate = () => {
 	const [promptValue, setPromptValue] = useState("");
-    const [previousPromptValue, setPreviousPromptValue] = useState('');
+	const [previousPromptValue, setPreviousPromptValue] = useState("");
 	const [generatedValue, setGeneratedValue] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const ai = new GoogleGenAI({
-		apiKey: "AIzaSyBszETvxeQDycpR6YeiU0b0NU5-Oz-CcH8",
+		apiKey: import.meta.env.VITE_GEMINI_API_KEY,
 	});
 
 	async function generate(contents) {
+		setIsLoading(true);
 		const response = await ai.models.generateContent({
 			model: "gemini-2.0-flash",
 			contents: contents,
-            config: {
-                systemInstruction: "You are a teacher who has mastered every subject. Your name is Lesson AI. Your job is to generate lesson plans for teachers to use. Make sure to ask amount of time teachers have to teach their desired topic and ask their desired file formatting and aid them in their chosen presentation method. After they answer your questions, immediately give them the lesosn plan you have generated based off the information they have given you. Format your responses appropriately.",
-            },
+			config: {
+				systemInstruction:
+					"You are a teacher who has mastered every subject. Your name is Lesson AI. Your job is to generate lesson plans for teachers to use. Format your responses appropriately.",
+			},
 		});
 		console.log(response.text);
 		setGeneratedValue(response.text);
+		setIsLoading(false);
 	}
 
 	function handleChange(e) {
@@ -35,7 +38,7 @@ const Generate = () => {
 		if (e.key === "Enter") {
 			if (promptValue.length > 0) {
 				generate(promptValue);
-                setPreviousPromptValue(e.target.value);
+				setPreviousPromptValue(promptValue);
 				setPromptValue("");
 			} else {
 				alert("Enter a non-empty input!");
@@ -46,16 +49,17 @@ const Generate = () => {
 	function handleKeySubmit() {
 		if (promptValue.length > 0) {
 			generate(promptValue);
-            setPreviousPromptValue(e.target.value);
+			setPreviousPromptValue(promptValue);
 			setPromptValue("");
 		} else {
 			alert("Enter a non-empty input!");
 		}
 	}
 
+
 	return (
 		<div className="min-h-screen bg-slate-50 w-full flex items-start justify-center">
-			<div className="flex flex-col items-start max-w-3xl gap-5 font-semibold text-3xl translate-y-[150px]">  
+			<div className="flex flex-col items-start max-w-3xl gap-5 font-semibold text-3xl translate-y-[150px]">
 				<div>
 					<div className="text-lg flex items-start w-[768px] pt-[10px] pb-[10px]">
 						Generate a lesson:
@@ -83,27 +87,33 @@ const Generate = () => {
 				</div>
 				<div
 					className="text-[25px] font-normal min-w-full max-h-[600px] overflow-auto p-[25px]
-  [&::-webkit-scrollbar]:w-2
-  [&::-webkit-scrollbar-track]:rounded-full
-  [&::-webkit-scrollbar-track]:bg-gray-100
-  [&::-webkit-scrollbar-thumb]:rounded-full
-  [&::-webkit-scrollbar-thumb]:bg-gray-300"
+					[&::-webkit-scrollbar]:w-2
+					[&::-webkit-scrollbar-track]:rounded-full
+					[&::-webkit-scrollbar-track]:bg-gray-100
+			[&::-webkit-scrollbar-thumb]:rounded-full
+					[&::-webkit-scrollbar-thumb]:bg-gray-300"
 				>
-                    <div className="font-bold pb-[20px]">Your Prompt: {previousPromptValue}</div>
+					<div className="font-bold pb-[20px]">
+						Your Prompt: {previousPromptValue}
+					</div>
 
-					<ReactMarkdown>{generatedValue}</ReactMarkdown>
-					{/* <Typewriter options={{
-                    strings: generatedValue,
-                    autoStart: true,
-                    delay: '0',
-                    loop: false,
-                    cursor: ''
-                }}
-                /> */}
+					{!isLoading ? (
+						<ReactMarkdown>{generatedValue}</ReactMarkdown>
+					) : (
+						<Typewriter
+							options={{
+								strings: "Loading...",
+								autoStart: true,
+								delay: "0",
+								loop: true,
+								cursor: "",
+							}}
+						/>
+					)}
 				</div>
 			</div>
 		</div>
-	);
+	);	
 };
 
 export default Generate;
