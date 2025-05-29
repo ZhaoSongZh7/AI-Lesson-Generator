@@ -28,6 +28,7 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
 
   async function generate(contents) {
     setIsLoading(true);
+    setIsEditing(false);
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: contents,
@@ -129,6 +130,7 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
+    setEditedValue(generatedValue);
   };
 
   const handleChangeSave = (e) => {
@@ -210,19 +212,12 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
                 </div>
               )}
               <div className="flex justify-center gap-4">
-                {!isEditing ? (
+                {!isEditing && (
                   <button
                     className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
                     onClick={generatePDF}
                   >
                     Generate
-                  </button>
-                ) : (
-                  <button
-                    className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
-                    onClick={handleCancel}
-                  >
-                    Cancel
                   </button>
                 )}
                 <button
@@ -231,6 +226,14 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
                 >
                   {!isEditing ? "Edit" : "Save"}
                 </button>
+                {isEditing && (
+                  <button
+                    className="translate-y-[20px] py\-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
+                    onClick={handleCancel}
+                  >
+                    Cancel
+                  </button>
+                )}
               </div>
             </>
           ) : (
