@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { IoSendSharp } from "react-icons/io5";
 import Typewriter from "typewriter-effect";
 import { GoogleGenAI } from "@google/genai";
@@ -10,10 +10,6 @@ import html2canvas from "html2canvas"; // make sure this is installed
 
 const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
   const [promptValue, setPromptValue] = useLocalStorage("promptValue", "");
-  const [previousPromptValue, setPreviousPromptValue] = useLocalStorage(
-    "previousPromptValue",
-    ""
-  );
   const [generatedValue, setGeneratedValue] = useLocalStorage(
     "generatedValue",
     ""
@@ -21,38 +17,70 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
   const [isLoading, setIsLoading] = useLocalStorage("isLoading", false);
   const [isEditing, setIsEditing] = useLocalStorage("isEditing", false);
   const [editedValue, setEditedValue] = useLocalStorage("editedValue", "");
+  const [currentPromptArray, setCurrentPromptArray] = useLocalStorage(
+    "currentPromptArray",
+    []
+  ); // Initialize as empty array
+  const [currentIndex, setCurrentIndex] = useLocalStorage("currentIndex", -1); // Initialize to -1 or 0, -1 is safer if array starts empty
 
   const ai = new GoogleGenAI({
     apiKey: import.meta.env.VITE_GEMINI_API_KEY,
   });
 
-  async function generate(contents) {
+  // Effect to update editedValue when generatedValue changes, to ensure editing reflects latest AI output
+  useEffect(() => {
+    if (!isEditing) {
+      setEditedValue(generatedValue);
+    }
+  }, [generatedValue, isEditing]);
+
+  // Effect to update pdfDataUri when generatedValue changes and not in editing mode
+  useEffect(() => {
+    if (!isEditing && generatedValue) {
+      generatePDF(); // Re-generate PDF whenever the content changes, unless editing
+    }
+  }, [generatedValue, isEditing]);
+
+  async function generate(prompt) {
     setIsLoading(true);
     setIsEditing(false);
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: contents,
-      config: {
-        systemInstruction:
-          "Make sure to use <br> after each new line. You are a teacher who has mastered every subject. Your name is Lesson AI. Your job is to generate lesson plans for teachers to use. Format your responses appropriately. Then, after giving your response, ask them more details such as how much time they have to teach the lesson, and what format they would like to have it in. Your next response will be formatted based of their answers.",
-      },
-    });
-    console.log(response.candidates[0].content.parts[0].text);
-    setGeneratedValue(response.text);
-    setIsLoading(false);
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: prompt,
+        config: {
+          systemInstruction:
+            "Make sure to use <br> after each new line. You are a teacher who has mastered every subject. Your name is Lesson AI. Your job is to generate lesson plans for teachers to use. Format your responses appropriately. Then, after giving your response, ask them more details such as how much time they have to teach the lesson, and what format they would like to have it in. Your next response will be formatted based of their answers.",
+        },
+      });
+      const aiText = response.text;
+      setGeneratedValue(aiText);
+
+      // Add the new prompt and AI response to the array
+      const newPromptEntry = { prompt: prompt, aiText: aiText };
+      setCurrentPromptArray((prevArray) => {
+        const updatedArray = [...prevArray, newPromptEntry];
+        setCurrentIndex(updatedArray.length - 1); // Set current index to the new entry
+        return updatedArray;
+      });
+
+      setPromptValue("");
+    } catch (error) {
+      console.error("Error generating content:", error);
+      alert("Failed to generate lesson plan. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function handleChange(e) {
     setPromptValue(e.target.value);
-    console.log(promptValue);
   }
 
   function handleEnterSubmit(e) {
     if (e.key === "Enter") {
       if (promptValue.length > 0) {
         generate(promptValue);
-        setPreviousPromptValue(promptValue);
-        setPromptValue("");
       } else {
         alert("Enter a non-empty input!");
       }
@@ -62,8 +90,6 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
   function handleKeySubmit() {
     if (promptValue.length > 0) {
       generate(promptValue);
-      setPreviousPromptValue(promptValue);
-      setPromptValue("");
     } else {
       alert("Enter a non-empty input!");
     }
@@ -84,7 +110,7 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
     const lineHeight = 20;
 
     // Basic markdown cleanup
-    const plainText = generatedValue.replace(/<br>/g, "\n").trim();
+    const plainText = "Your Prompt: **" + currentPromptArray[currentIndex].prompt + "** \n" + currentPromptArray[currentIndex].aiText.replace(/<br>/g, "\n").trim();
 
     const lines = plainText.split("\n");
 
@@ -129,24 +155,51 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
   };
 
   const handleEdit = () => {
-    setIsEditing(!isEditing);
-    setEditedValue(generatedValue);
+    setIsEditing(true);
+    setEditedValue(currentPromptArray[currentIndex]?.aiText || "");
   };
 
   const handleChangeSave = (e) => {
     setEditedValue(e.target.value);
-    console.log(editedValue);
   };
 
   const handleSaveSubmit = () => {
-    setIsEditing(!isEditing);
-    setGeneratedValue(editedValue);
+    setIsEditing(false);
+    // Update the specific entry in the array
+    setCurrentPromptArray((prevArray) => {
+      const updatedArray = [...prevArray];
+      if (currentIndex >= 0 && currentIndex < updatedArray.length) {
+        updatedArray[currentIndex] = {
+          ...updatedArray[currentIndex],
+          aiText: editedValue,
+        };
+      }
+      return updatedArray;
+    });
+    setGeneratedValue(editedValue); // Also update generatedValue for immediate display
   };
 
   const handleCancel = () => {
-    setIsEditing(!isEditing);
-    setEditedValue(generatedValue);
+    setIsEditing(false);
+    // Revert editedValue to the current displayed value
+    setEditedValue(currentPromptArray[currentIndex]?.aiText || "");
   };
+
+  const handleForward = () => {
+    setCurrentIndex((prevIndex) =>
+      Math.min(prevIndex + 1, currentPromptArray.length - 1)
+    );
+  };
+
+  const handleBack = () => {
+    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
+
+  // Determine what content to display based on editing state and current index
+  const displayedPrompt = currentPromptArray[currentIndex]?.prompt || "";
+  const displayedAiText = isEditing
+    ? editedValue
+    : currentPromptArray[currentIndex]?.aiText || "";
 
   return (
     <div className="min-h-screen bg-slate-50 w-full flex items-start justify-center">
@@ -178,14 +231,14 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
         </div>
         <div
           className="text-[25px] font-normal min-w-full max-h-[600px] overflow-auto p-[25px]
-					[&::-webkit-scrollbar]:w-2
-					[&::-webkit-scrollbar-track]:rounded-full
-					[&::-webkit-scrollbar-track]:bg-gray-100
-			[&::-webkit-scrollbar-thumb]:rounded-full
-					[&::-webkit-scrollbar-thumb]:bg-gray-300"
+          [&::-webkit-scrollbar]:w-2
+          [&::-::-webkit-scrollbar-track]:rounded-full
+          [&::-webkit-scrollbar-track]:bg-gray-100
+          [&::-webkit-scrollbar-thumb]:rounded-full
+          [&::-webkit-scrollbar-thumb]:bg-gray-300"
         >
           <div className="font-bold pb-[20px]">
-            Your Prompt: {previousPromptValue}
+            Your Prompt: {displayedPrompt}
           </div>
 
           {!isLoading ? (
@@ -194,11 +247,11 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
                 <textarea
                   onChange={handleChangeSave}
                   className="min-w-full h-[400px] overflow-auto p-[25px]
-					[&::-webkit-scrollbar]:w-2
-					[&::-webkit-scrollbar-track]:rounded-full
-					[&::-webkit-scrollbar-track]:bg-gray-100
-			[&::-webkit-scrollbar-thumb]:rounded-full
-					[&::-webkit-scrollbar-thumb]:bg-gray-300"
+          [&::-webkit-scrollbar]:w-2
+          [&::-webkit-scrollbar-track]:rounded-full
+          [&::-webkit-scrollbar-track]:bg-gray-100
+      [&::-webkit-scrollbar-thumb]:rounded-full
+          [&::-webkit-scrollbar-thumb]:bg-gray-300"
                   value={editedValue}
                 ></textarea>
               ) : (
@@ -207,28 +260,46 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
                     remarkPlugins={[remarkBreaks]}
                     rehypePlugins={[rehypeRaw]}
                   >
-                    {generatedValue}
+                    {displayedAiText}
                   </ReactMarkdown>
                 </div>
               )}
               <div className="flex justify-center gap-4">
                 {!isEditing && (
-                  <button
-                    className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
-                    onClick={generatePDF}
-                  >
-                    Generate
-                  </button>
+                  <>
+                    <button
+                      className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
+                      onClick={generatePDF}
+                      disabled={!currentPromptArray.length} // Disable if no content
+                    >
+                      Generate PDF
+                    </button>
+                    <button
+                      className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
+                      onClick={handleForward}
+                      disabled={currentIndex >= currentPromptArray.length - 1} // Disable if at the last item
+                    >
+                      Forward
+                    </button>
+                    <button
+                      className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
+                      onClick={handleBack}
+                      disabled={currentIndex <= 0} // Disable if at the first item
+                    >
+                      Back
+                    </button>
+                  </>
                 )}
                 <button
                   className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
                   onClick={!isEditing ? handleEdit : handleSaveSubmit}
+                  disabled={!currentPromptArray.length && !isEditing} // Disable edit if no content, but allow save if editing
                 >
                   {!isEditing ? "Edit" : "Save"}
                 </button>
                 {isEditing && (
                   <button
-                    className="translate-y-[20px] py\-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
+                    className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
                     onClick={handleCancel}
                   >
                     Cancel
