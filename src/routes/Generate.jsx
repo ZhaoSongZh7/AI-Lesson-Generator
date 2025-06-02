@@ -7,6 +7,7 @@ import remarkBreaks from "remark-breaks";
 import rehypeRaw from "rehype-raw";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas"; // make sure this is installed
+import { FaArrowCircleLeft, FaArrowCircleRight } from "react-icons/fa";
 
 const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
   const [promptValue, setPromptValue] = useLocalStorage("promptValue", "");
@@ -110,7 +111,11 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
     const lineHeight = 20;
 
     // Basic markdown cleanup
-    const plainText = "Your Prompt: **" + currentPromptArray[currentIndex].prompt + "** \n" + currentPromptArray[currentIndex].aiText.replace(/<br>/g, "\n").trim();
+    const plainText =
+      "Your Prompt: **" +
+      currentPromptArray[currentIndex].prompt +
+      "** \n" +
+      currentPromptArray[currentIndex].aiText.replace(/<br>/g, "\n").trim();
 
     const lines = plainText.split("\n");
 
@@ -186,13 +191,17 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
   };
 
   const handleForward = () => {
-    setCurrentIndex((prevIndex) =>
-      Math.min(prevIndex + 1, currentPromptArray.length - 1)
-    );
+    if (!isEditing) {
+      setCurrentIndex((prevIndex) =>
+        Math.min(prevIndex + 1, currentPromptArray.length - 1)
+      );
+    }
   };
 
   const handleBack = () => {
-    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+    if (!isEditing) {
+      setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+    }
   };
 
   // Determine what content to display based on editing state and current index
@@ -202,7 +211,7 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
     : currentPromptArray[currentIndex]?.aiText || "";
 
   return (
-    <div className="min-h-screen bg-slate-50 w-full flex items-start justify-center">
+    <div className="min-h-screen bg-slate-50 w-full flex items-start justify-center select-none">
       <div className="flex flex-col items-start max-w-3xl gap-5 font-semibold text-3xl translate-y-[150px]">
         <div>
           <div className="text-lg flex items-start w-[768px] pt-[10px] pb-[10px]">
@@ -229,98 +238,108 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
             </div>
           </label>
         </div>
-        <div
-          className="text-[25px] font-normal min-w-full max-h-[600px] overflow-auto p-[25px]
+        <div className="flex justify-center items-center min-h-full">
+          <div className="-translate-x-[30px] h-[600px]">
+            <button
+              className="min-h-full hover:bg-gray-200 transition duration-200 rounded-4xl"
+              onClick={handleBack}
+            >
+              <FaArrowCircleLeft
+                className="text-[60px] h-[600px] pl-[8px] pr-[8px] rounded-4xl"
+                disabled={currentIndex >= currentPromptArray.length - 1}
+              />
+            </button>
+          </div>
+          <div
+            className="text-[25px] font-normal min-w-full max-h-[600px] overflow-auto p-[25px]
           [&::-webkit-scrollbar]:w-2
           [&::-::-webkit-scrollbar-track]:rounded-full
           [&::-webkit-scrollbar-track]:bg-gray-100
           [&::-webkit-scrollbar-thumb]:rounded-full
           [&::-webkit-scrollbar-thumb]:bg-gray-300"
-        >
-          <div className="font-bold pb-[20px]">
-            Your Prompt: {displayedPrompt}
-          </div>
+          >
+            <div className="font-bold pb-[20px]">
+              Your Prompt: {displayedPrompt}
+            </div>
 
-          {!isLoading ? (
-            <>
-              {isEditing ? (
-                <textarea
-                  onChange={handleChangeSave}
-                  className="min-w-full h-[400px] overflow-auto p-[25px]
+            {!isLoading ? (
+              <>
+                {isEditing ? (
+                  <textarea
+                    onChange={handleChangeSave}
+                    className="min-w-[600px] h-[400px] overflow-auto p-[25px]
           [&::-webkit-scrollbar]:w-2
           [&::-webkit-scrollbar-track]:rounded-full
           [&::-webkit-scrollbar-track]:bg-gray-100
       [&::-webkit-scrollbar-thumb]:rounded-full
           [&::-webkit-scrollbar-thumb]:bg-gray-300"
-                  value={editedValue}
-                ></textarea>
-              ) : (
-                <div>
-                  <ReactMarkdown
-                    remarkPlugins={[remarkBreaks]}
-                    rehypePlugins={[rehypeRaw]}
-                  >
-                    {displayedAiText}
-                  </ReactMarkdown>
-                </div>
-              )}
-              <div className="flex justify-center gap-4">
-                {!isEditing && (
-                  <>
-                    <button
-                      className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
-                      onClick={generatePDF}
-                      disabled={!currentPromptArray.length} // Disable if no content
+                    value={editedValue}
+                  ></textarea>
+                ) : (
+                  <div>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkBreaks]}
+                      rehypePlugins={[rehypeRaw]}
                     >
-                      Generate PDF
-                    </button>
-                    <button
-                      className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
-                      onClick={handleForward}
-                      disabled={currentIndex >= currentPromptArray.length - 1} // Disable if at the last item
-                    >
-                      Forward
-                    </button>
-                    <button
-                      className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
-                      onClick={handleBack}
-                      disabled={currentIndex <= 0} // Disable if at the first item
-                    >
-                      Back
-                    </button>
-                  </>
+                      {displayedAiText}
+                    </ReactMarkdown>
+                  </div>
                 )}
-                <button
-                  className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
-                  onClick={!isEditing ? handleEdit : handleSaveSubmit}
-                  disabled={!currentPromptArray.length && !isEditing} // Disable edit if no content, but allow save if editing
-                >
-                  {!isEditing ? "Edit" : "Save"}
-                </button>
-                {isEditing && (
+                <div className="flex justify-center gap-4">
+                  {!isEditing && (
+                    <>
+                      <button
+                        className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
+                        onClick={generatePDF}
+                        disabled={!currentPromptArray.length} // Disable if no content
+                      >
+                        Generate PDF
+                      </button>
+                    </>
+                  )}
                   <button
                     className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
-                    onClick={handleCancel}
+                    onClick={!isEditing ? handleEdit : handleSaveSubmit}
+                    disabled={!currentPromptArray.length && !isEditing} // Disable edit if no content, but allow save if editing
                   >
-                    Cancel
+                    {!isEditing ? "Edit" : "Save"}
                   </button>
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              <Typewriter
-                options={{
-                  strings: "Loading...",
-                  autoStart: true,
-                  delay: "0",
-                  loop: true,
-                  cursor: "",
-                }}
+                  {isEditing && (
+                    <button
+                      className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
+                      onClick={handleCancel}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <Typewriter
+                  className="w-[1000px]"
+                  options={{
+                    strings: "Loading...",
+                    autoStart: true,
+                    delay: "0",
+                    loop: true,
+                    cursor: "",
+                  }}
+                />
+              </>
+            )}
+          </div>
+          <div className="ml-[20px] h-[600px]">
+            <button className="min-h-full hover:bg-gray-200 transition duration-200 rounded-4xl">
+              <FaArrowCircleRight
+                onClick={handleForward}
+                className="text-[60px] h-[600px] pl-[8px] pr-[8px] rounded-4xl"
+                disabled={currentIndex <= 0}
               />
-            </>
-          )}
+            </button>
+          </div>
         </div>
+        <div className="min-w-full justify-center items-center font-semibold">{currentIndex + 1} / {currentPromptArray.length}</div>
       </div>
     </div>
   );
