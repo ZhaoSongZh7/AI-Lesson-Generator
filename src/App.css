@@ -4,6 +4,19 @@
   text-align: center;
 }
 
+/* For the entire page scrollbar */
+body::-webkit-scrollbar {
+  width: 0;  /* Remove scrollbar space */
+  background: transparent;  /* Optional: just make it transparent */
+}
+
+/* You can also apply this to specific elements with scrollbars */
+.my-scrollable-div::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+
 .no-print {
   display: block;
 }
