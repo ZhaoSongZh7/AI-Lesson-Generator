@@ -36,3 +36,6 @@
     height: auto; /* Maintains aspect ratio */
   }
   
+  #features {
+    font-weight: 600;
+  }

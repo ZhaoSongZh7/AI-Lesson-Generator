@@ -8,6 +8,7 @@ import Home from './routes/Home.jsx'
 import About from './routes/About.jsx'
 import Generate from './routes/Generate.jsx'
 import Preview from './routes/Preview.jsx'
+import Footer from './components/Footer.jsx'
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path='/generate' element={<Generate />}/>
           <Route path='/preview' element={<Preview />}/>          
         </Routes>
+        <Footer />
       </div>
     </>
   )
