@@ -238,108 +238,115 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
             </div>
           </label>
         </div>
-        <div className="flex justify-center items-center min-h-full">
-          <div className="-translate-x-[30px] h-[600px]">
-            <button
-              className="min-h-full hover:bg-gray-200 transition duration-200 rounded-4xl"
-              onClick={handleBack}
-            >
-              <FaArrowCircleLeft
-                className="text-[60px] h-[600px] pl-[8px] pr-[8px] rounded-4xl"
-                disabled={currentIndex >= currentPromptArray.length - 1}
-              />
-            </button>
-          </div>
-          <div
-            className="text-[25px] font-normal min-w-full max-h-[600px] overflow-auto p-[25px]
+        {generatedValue && (
+          <>
+            <div className="flex justify-center items-center min-h-full">
+              <div className="-translate-x-[30px] h-[600px]">
+                <button
+                  className="min-h-full hover:bg-gray-200 transition duration-200 rounded-4xl"
+                  onClick={handleBack}
+                >
+                  <FaArrowCircleLeft
+                    className="text-[60px] h-[600px] pl-[8px] pr-[8px] rounded-4xl"
+                    disabled={currentIndex >= currentPromptArray.length - 1}
+                  />
+                </button>
+              </div>
+              <div
+                className="text-[25px] font-normal min-w-full max-h-[600px] overflow-auto p-[25px]
           [&::-webkit-scrollbar]:w-2
           [&::-::-webkit-scrollbar-track]:rounded-full
           [&::-webkit-scrollbar-track]:bg-gray-100
           [&::-webkit-scrollbar-thumb]:rounded-full
           [&::-webkit-scrollbar-thumb]:bg-gray-300"
-          >
-            <div className="font-bold pb-[20px]">
-              Your Prompt: {displayedPrompt}
-            </div>
+              >
+                <div className="font-bold pb-[20px]">
+                  Your Prompt: {displayedPrompt}
+                </div>
 
-            {!isLoading ? (
-              <>
-                {isEditing ? (
-                  <textarea
-                    onChange={handleChangeSave}
-                    className="min-w-[600px] h-[400px] overflow-auto p-[25px]
+                {!isLoading ? (
+                  <>
+                    {isEditing ? (
+                      <textarea
+                        onChange={handleChangeSave}
+                        className="min-w-[600px] h-[400px] overflow-auto p-[25px]
           [&::-webkit-scrollbar]:w-2
           [&::-webkit-scrollbar-track]:rounded-full
           [&::-webkit-scrollbar-track]:bg-gray-100
       [&::-webkit-scrollbar-thumb]:rounded-full
           [&::-webkit-scrollbar-thumb]:bg-gray-300"
-                    value={editedValue}
-                  ></textarea>
-                ) : (
-                  <div>
-                    <ReactMarkdown
-                      remarkPlugins={[remarkBreaks]}
-                      rehypePlugins={[rehypeRaw]}
-                    >
-                      {displayedAiText}
-                    </ReactMarkdown>
-                  </div>
-                )}
-                <div className="flex justify-center gap-4">
-                  {!isEditing && (
-                    <>
+                        value={editedValue}
+                      ></textarea>
+                    ) : (
+                      <div>
+                        <ReactMarkdown
+                          remarkPlugins={[remarkBreaks]}
+                          rehypePlugins={[rehypeRaw]}
+                        >
+                          {displayedAiText}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                    <div className="flex justify-center gap-4">
+                      {!isEditing && (
+                        <>
+                          <button
+                            className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
+                            onClick={generatePDF}
+                            disabled={!currentPromptArray.length} // Disable if no content
+                          >
+                            Generate PDF
+                          </button>
+                        </>
+                      )}
                       <button
                         className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
-                        onClick={generatePDF}
-                        disabled={!currentPromptArray.length} // Disable if no content
+                        onClick={!isEditing ? handleEdit : handleSaveSubmit}
+                        disabled={!currentPromptArray.length && !isEditing} // Disable edit if no content, but allow save if editing
                       >
-                        Generate PDF
+                        {!isEditing ? "Edit" : "Save"}
                       </button>
-                    </>
-                  )}
-                  <button
-                    className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
-                    onClick={!isEditing ? handleEdit : handleSaveSubmit}
-                    disabled={!currentPromptArray.length && !isEditing} // Disable edit if no content, but allow save if editing
-                  >
-                    {!isEditing ? "Edit" : "Save"}
-                  </button>
-                  {isEditing && (
-                    <button
-                      className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
-                      onClick={handleCancel}
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <Typewriter
-                  className="w-[1000px]"
-                  options={{
-                    strings: "Loading...",
-                    autoStart: true,
-                    delay: "0",
-                    loop: true,
-                    cursor: "",
-                  }}
-                />
-              </>
-            )}
-          </div>
-          <div className="ml-[20px] h-[600px]">
-            <button className="min-h-full hover:bg-gray-200 transition duration-200 rounded-4xl">
-              <FaArrowCircleRight
-                onClick={handleForward}
-                className="text-[60px] h-[600px] pl-[8px] pr-[8px] rounded-4xl"
-                disabled={currentIndex <= 0}
-              />
-            </button>
-          </div>
-        </div>
-        <div className="min-w-full justify-center items-center font-semibold">{currentIndex + 1} / {currentPromptArray.length}</div>
+                      {isEditing && (
+                        <button
+                          className="translate-y-[20px] py-1 px-3 text-2xl font-light rounded-[8px] text-white bg-slate-700 hover:text-sky-300 transition duration-300 "
+                          onClick={handleCancel}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-[570px] justify-center items-center">
+                      <Typewriter
+                        options={{
+                          strings: "Loading...",
+                          autoStart: true,
+                          delay: "0",
+                          loop: true,
+                          cursor: "",
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="ml-[20px] h-[600px]">
+                <button className="min-h-full hover:bg-gray-200 transition duration-200 rounded-4xl">
+                  <FaArrowCircleRight
+                    onClick={handleForward}
+                    className="text-[60px] h-[600px] pl-[8px] pr-[8px] rounded-4xl"
+                    disabled={currentIndex <= 0}
+                  />
+                </button>
+              </div>
+            </div>
+            <div className="min-w-full justify-center items-center font-semibold">
+              {currentIndex + 1} / {currentPromptArray.length}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
