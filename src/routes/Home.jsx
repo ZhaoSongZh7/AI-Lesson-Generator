@@ -8,13 +8,13 @@ const Home = () => {
     <>
       <div className="min-h-screen w-full flex flex-col items-center justify-start pt-16 bg-gradient-to-b from-slate-100 to-blue-200">
         <h1 className="fade-in-text translate-y-[100px] sticky text-7xl bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent tracking-normal opacity-80 font-bold mb-30">
-          Welcome to LessonPrint AI
+          Welcome to LessonPlan AI
         </h1>
         <div className="flex flex-col translate-y-2 max-w-4xl text-4xl gap-5 text-black font-semibold pt-12 px-4 text-center h-32">
           <Typewriter
             options={{
               strings:
-                "At LessonPrint AI, we help you go from idea to print in seconds. Enter a prompt anything from “a 5th grade science lesson on photosynthesis” to “an ESL grammar warm-up” and let our AI do the rest. Generate. Preview. Print. Done.",
+                "At LessonPlan AI, we help you go from idea to print in seconds. Enter a prompt anything from “a 5th grade science lesson on photosynthesis” to “an ESL grammar warm-up” and let our AI do the rest. Generate. Preview. Print. Done.",
               autoStart: true,
               delay: 15,
               loop: false,

@@ -8,7 +8,7 @@ const Navbar = () => {
         <div className='flex items-center gap-5 text-black'>
             <div className='flex items-center gap-3 font-semibold py-1 px-3 text-2xl hover:text-sky-500 transition duration-300 text-white'>
                 <BiPrinter className='text-[45px] min-w-[45px]'/>
-                <span>LessonPrint AI<span className='bg-gradient-to-r from-[#4285F4] via-[#34A853] to-[#FBBC05] bg-clip-text text-transparent'> - powered by Gemini</span></span>
+                <span>LessonPlan AI<span className='bg-gradient-to-r from-[#4285F4] via-[#34A853] to-[#FBBC05] bg-clip-text text-transparent'> - powered by Gemini</span></span>
             </div>
         
             <Link to="/" className='py-1 px-3 text-lg font-light rounded-2xl text-white hover:text-sky-300 hover:bg-slate-700 transition duration-300'>

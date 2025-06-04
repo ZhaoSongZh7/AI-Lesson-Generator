@@ -318,7 +318,7 @@ const Generate = ({ pdfDataUri, setPdfDataUri, useLocalStorage }) => {
                   </>
                 ) : (
                   <>
-                    <div className="w-[570px] justify-center items-center">
+                    <div className="w-[570px] text-center justify-center items-center">
                       <Typewriter
                         options={{
                           strings: "Loading...",
