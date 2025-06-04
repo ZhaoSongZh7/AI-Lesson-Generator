@@ -6,7 +6,7 @@ import "./Home.css";
 const Home = () => {
   return (
     <>
-      <div className="min-h-screen w-full flex flex-col items-center justify-start pt-16 bg-gradient-to-b from-slate-100 to-blue-200">
+      <div className="min-h-screen w-full flex flex-col items-center justify-start pt-16 bg-slate-50">
         <h1 className="fade-in-text translate-y-[100px] sticky text-7xl bg-gradient-to-r from-blue-500 to-blue-800 bg-clip-text text-transparent tracking-normal opacity-80 font-bold mb-30">
           Welcome to LessonPlan AI
         </h1>
